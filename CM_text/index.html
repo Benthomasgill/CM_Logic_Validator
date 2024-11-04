@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CM Segment Logic Creator</title>
+    <style>
+        body {
+            font-family: 'Poppins', Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            height: 100%;
+            min-height: 100vh;
+            text-align: left;
+            background-color: #f0f0f0;
+            position: relative;
+        }
+        .container {
+            margin: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 900px;
+            padding: 0 40px 80px 40px;
+            position: relative;
+            z-index: 1;
+            background: #FFF;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.12);
+        }
+        .output {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .radio-group {
+            margin-bottom: 10px;
+        }
+        .text-group {
+            margin-bottom: 15px;
+        }
+        label {
+            padding-right: 10px;
+            color: #999;
+        }
+        input {
+            margin-right: 10px;
+            font-size: 21px;
+            padding: 10px;
+            @media only screen and (max-width: 600px) {
+                display: block;
+                width: 100%;
+                height: 30px;
+            }
+        }
+        .field-group {
+            margin-bottom: 10px;
+            display: flex;
+            @media only screen and (max-width: 600px) {
+                display: inline-block;
+                width: 100%;
+            }
+        }
+        .remove-button {
+            margin-left: 10px;
+            cursor: pointer;
+            color: red;
+            line-height: 46px;
+            font-size: 14px;
+            @media only screen and (max-width: 600px) {
+                margin-left: 0px;
+                margin-top: 8px;
+                display: block;
+                font-size: 14px;
+            }
+        }
+        .remove-button > img {
+            max-width: 30px;
+        }
+        .add-button {
+            margin-top: 10px;
+            cursor: pointer;
+            color: blue;
+        }
+        .add-button > img {
+            max-width: 30px;
+        }
+        h1 {
+            font-size: 2em;
+            padding-top: 24px;
+            padding-bottom: 30px;
+            margin-top: 0;
+            font-weight: 600;
+            color: #3fc1c7;
+        }
+        button {
+            display: inline-block;
+            line-height: 1.1;
+            border-radius: 50px;
+            background: linear-gradient(35deg, #3fc7c4, #44d196);
+            color: #FFF;
+            font-weight: 600;
+            border: 0;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-decoration: none !important;
+            padding: 0.7em 1.2em 0.73em 1.2em;
+            font-size: 20px;
+            font-family: 'Poppins', Helvetica, Arial, sans-serif;
+        }
+        #logo > img {
+            display: block;
+            width: 140px;
+            padding-top: 20px;
+        }
+        #textInput {
+            max-width: 100%;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="images/favicon.png">
+</head>
+<body>
+    <div class="container">
+        <div id="logo">
+            <img src="./images/logo-small.png" alt="Donor Republic">
+        </div>
+        <h1>CM Segment Logic Creator</h1>
+        <form id="prefixForm">
+
+
+            <div id="textFieldsContainer">
+                <div class="text-group field-group">
+                    <label for="textInput1">List Name:</label>
+                    <input type="text" class="textInput" name="textInput1">
+                
+                    <label for="textInput2">Segment Name:</label>
+                    <input type="text" class="textInput" name="textInput2">
+                    <span class="add-button" onclick="addFields()"><img src="images/addLine.png"></span>
+                    
+                </div>
+            </div>
+            
+            
+            <br><br>
+            <button type="button" onclick="submitForm()">Submit</button>
+        </form>
+        <div id="output" class="output"></div>
+        <h1>CM Segment Logic Validator</h1>
+        <form id="textForm">
+            <label for="textInput">Enter text:</label><br>
+            <textarea id="textInput" rows="6" cols="50"></textarea><br><br>
+            <button type="button" onclick="validateText()">Submit</button>
+        </form>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        let fieldCount = 1;
+
+        function addFields() {
+            fieldCount++;
+            const container = document.getElementById('textFieldsContainer');
+            const fieldGroup = document.createElement('div');
+            fieldGroup.className = 'text-group field-group';
+            fieldGroup.innerHTML = `
+                <label for="textInput${fieldCount}1">List Name:</label>
+                <input type="text" class="textInput" name="textInput${fieldCount}1">
+                <br>
+                <label for="textInput${fieldCount}2">Segment Name:</label>
+                <input type="text" class="textInput" name="textInput${fieldCount}2">
+                <span class="add-button" onclick="addFields()"><img src="images/addLine.png"></span>
+                <span class="remove-button" onclick="removeFields(this)">Remove</span>
+            `;
+            container.appendChild(fieldGroup);
+        }
+
+        function removeFields(element) {
+            const container = document.getElementById('textFieldsContainer');
+            container.removeChild(element.parentElement);
+        }
+
+        function submitForm() {
+            const prefix = '[ifmemberof:';
+            const textInputs = document.querySelectorAll('.textInput');
+            let outputString = prefix;
+
+            textInputs.forEach((input, index) => {
+                if (index % 2 === 0) {
+                    const listName = input.value;
+                    const segmentName = textInputs[index + 1]?.value || '';
+                    if(segmentName){
+                    outputString += `"${listName}|${segmentName}",`;
+                    }else{
+                    outputString += `"${listName}",`;    
+                    }
+                }
+            });
+
+            outputString = outputString.trim().slice(0, -1) + ']';
+            document.getElementById('output').innerText = outputString + '[endif]';
+        }
+    </script>
+
+ 
+     <script>
+ function validateText() {
+    const text = document.getElementById('textInput').value.trim();
+    const resultElement = document.getElementById('result');
+    
+    // Reset result element
+    resultElement.textContent = '';
+    resultElement.className = '';
+
+    // Check if text starts with [ifmemberof:"
+    if (!text.startsWith('[ifmemberof:"')) {
+        resultElement.textContent = 'You must start your text with [ifmemberof:"';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Check if text ends with [endif]
+    if (!text.endsWith('[endif]')) {
+        resultElement.textContent = 'Your text must end in [endif]';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Extract the inner text between [ifmemberof:" and [endif]
+    const innerText = text.substring(12, text.length - 7); // Remove the [ifmemberof:" and [endif]
+
+    // Check if "" have text in it and isn't empty
+    const quotes = innerText.split('"');
+    if (quotes.length < 3 || quotes[1].trim() === '') {
+        resultElement.textContent = 'Please include a list name enclosed by a " either side e.g "ENG 2024|List Name"';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Check if "" is followed by ]
+    if (innerText.indexOf('"]') === -1) {
+        resultElement.textContent = 'You are missing a ] or " from the end of your if statement';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Check for [else statement
+    if (text.includes('[else')) {
+        resultElement.textContent = 'ELSE statements can only be used in custom field checks';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Count the number of quotes and pipe characters
+    const quoteCount = (text.match(/"/g) || []).length;
+    const pipeCount = (text.match(/\|/g) || []).length;
+
+    // Check for only one quote
+    if (quoteCount === 1) {
+        resultElement.textContent = 'You must close your list segment selecting with a second "';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // New check for ","" in the inner text
+    if (innerText.includes(',""')) {
+        resultElement.textContent = 'Please enter your second list.';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Check for more than two quotes
+    if (quoteCount > 2) {
+        const quotePositions = [...innerText.matchAll(/"/g)].map(match => match.index);
+        if (quotePositions[2] > 0 && innerText[quotePositions[2] - 1] === ',' && quoteCount > 3) {
+            // If third quote is preceded by a comma and there is a fourth quote
+        } else {
+            resultElement.textContent = 'You are missing or have too many " in your text.';
+            resultElement.className = 'error';
+            return;
+        }
+    }
+
+    // Updated check for valid quotes
+    const validQuotes = /"[^"]*"|"[^"]*,?[^"]*"/.test(innerText);
+    if (!validQuotes) {
+        resultElement.textContent = 'You are missing or have too many " in your text.';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // New check for | followed by "
+    const pipeFollowedByQuote = innerText.includes('|"') || innerText.includes('|""');
+    if (pipeFollowedByQuote) {
+        resultElement.textContent = 'Segment missing, please either remove the | or add your desired segment name';
+        resultElement.className = 'error';
+        return;
+    }
+
+    if (pipeCount > 1) {
+        resultElement.textContent = 'You can only have one | in your code.';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // Check for presence of > or <
+    if (text.includes('>') || text.includes('<')) {
+        resultElement.textContent = 'You can use > or < in your segment name.';
+        resultElement.className = 'error';
+        return;
+    }
+
+    // If all checks pass
+    resultElement.textContent = 'Your code is valid!';
+    resultElement.className = 'valid';
+}
+
+
+
+
+
+
+
+     </script>
+</body>
+</html>
